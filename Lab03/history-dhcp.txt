@@ -1,0 +1,63 @@
+cd qa3
+whoami
+date
+sudo apt install -y isc-dhcp-server isc-dhcp-client
+sudo ip netns add qa3513-a
+sudo ip netns add qa3513-b
+sudo ip link add a0 type veth peer name b0
+sudo ip link set a0 netns qa3513-a
+sudo ip link set b0 netns qa3513-b
+sudo ip -n qa3513-a addr add 10.35.13.1/24 dev a0
+sudo ip -n qa3513-a link set lo up
+sudo ip -n qa3513-b link set lo up
+sudo ip -n qa3513-a link set a0 up
+sudo ip -n qa3513-b link set b0 up
+sudo ip -n qa3513-a -br link
+sudo ip -n qa3513-b -br link
+resolvectl dns enp0s3
+sudo timeout --signal=INT 12 tcpdump -i enp0s3 -U -w dns.pcap 'udp port 53' > dns-capture.log 2>&1 &
+dig @192.168.1.1 example.com A +tries=1 +time=3
+vim dhcpd.conf
+cat dhcpd.conf
+sudo install -m 644 dhcpd.conf /etc/dhcp/dhcpd-qa3513.conf
+sudo install -m 755 client-script.sh /etc/dhcp/dhclient-script
+sudo dhcpd -t -cf /etc/dhcp/dhcpd-qa3513.conf
+sudo touch /var/lib/dhcp/dhcpd.leases.qa3513-base
+sudo ip netns exec qa3513-a dhcpd -4 -cf /etc/dhcp/dhcpd-qa3513.conf -lf /var/lib/dhcp/dhcpd.leases.qa3513-base -pf /run/dhcpd.pid a0
+sudo ip netns exec qa3513-a timeout --signal=INT 25 tcpdump -i a0 -U -w baseline.pcap 'udp port 67 or 68' > capture-baseline.log 2>&1 &
+sudo ip netns exec qa3513-b dhclient -4 -v -1 -sf /etc/dhcp/dhclient-script -lf /var/lib/dhcp/dhclient.qa3513-base.leases -pf /run/dhclient-qa3513.pid b0
+sudo ip -n qa3513-b -4 address show dev b0
+sudo ip -n qa3513-b route show
+cat /run/qa3513-resolv.conf
+sudo cat /var/lib/dhcp/dhcpd.leases.qa3513-base
+cp dhcpd.conf dhcpd-good.conf
+sudo ip netns exec qa3513-b dhclient -4 -r -sf /etc/dhcp/dhclient-script -lf /var/lib/dhcp/dhclient.qa3513-base.leases -pf /run/dhclient-qa3513.pid b0
+sudo kill -TERM 5728
+vim dhcpd.conf
+cp dhcpd.conf dhcpd-bad-mask.conf
+sudo install -m 644 dhcpd.conf /etc/dhcp/dhcpd-qa3513.conf
+sudo ip netns exec qa3513-a dhcpd -4 -cf /etc/dhcp/dhcpd-qa3513.conf -lf /var/lib/dhcp/dhcpd.leases.qa3513-base -pf /run/dhcpd.pid a0 2>&1 | tee bad-mask-start.txt
+sudo ip -n qa3513-b -4 address show dev b0
+sudo ip netns exec qa3513-a timeout --signal=INT 25 tcpdump -i a0 -U -w bad-mask.pcap 'udp port 67 or 68' > capture-bad-mask.log 2>&1 &
+sudo ip netns exec qa3513-b timeout 12 dhclient -4 -d -v -1 -sf /etc/dhcp/dhclient-script -lf /var/lib/dhcp/dhclient.qa3513-bad.leases -pf /run/dhclient-qa3513.pid b0 2>&1 | tee bad-mask-client.txt
+sudo ip -n qa3513-b -4 address show dev b0
+sudo ip netns exec qa3513-a ss -lun
+cp dhcpd-good.conf dhcpd.conf
+sudo install -m 644 dhcpd.conf /etc/dhcp/dhcpd-qa3513.conf
+sudo touch /var/lib/dhcp/dhcpd.leases.qa3513-recovery
+sudo ip netns exec qa3513-a dhcpd -4 -cf /etc/dhcp/dhcpd-qa3513.conf -lf /var/lib/dhcp/dhcpd.leases.qa3513-recovery -pf /run/dhcpd.pid a0
+sudo ip netns exec qa3513-a timeout --signal=INT 30 tcpdump -i a0 -U -w recovery.pcap 'udp port 67 or 68' > capture-recovery.log 2>&1 &
+sudo ip netns exec qa3513-b dhclient -4 -v -1 -sf /etc/dhcp/dhclient-script -lf /var/lib/dhcp/dhclient.qa3513-recovery.leases -pf /run/dhclient-qa3513.pid b0
+sudo ip -n qa3513-b -4 address show dev b0
+sudo ip netns exec qa3513-b ping -c 3 10.35.13.1 | tee recovery-ping.txt
+sudo ip -n qa3513-b route show
+wireshark -r baseline.pcap -Y dhcp > wireshark.log 2>&1 &
+wireshark -r dns.pcap -Y dns > wireshark-dns.log 2>&1 &
+sudo ip netns exec qa3513-b dhclient -4 -r -sf /etc/dhcp/dhclient-script -lf /var/lib/dhcp/dhclient.qa3513-recovery.leases -pf /run/dhclient-qa3513.pid b0
+sudo kill -TERM 6179
+sudo ip netns del qa3513-a
+sudo ip netns del qa3513-b
+sudo rm /etc/dhcp/dhcpd-qa3513.conf /etc/dhcp/dhclient-script /run/qa3513-resolv.conf
+ps -p 6179,6190 -o pid,args
+sudo rm -f /run/dhcpd.pid /run/dhclient-qa3513.pid
+history -w history-dhcp.txt

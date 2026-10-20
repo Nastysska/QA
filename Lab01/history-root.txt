@@ -1,0 +1,3 @@
+ifconfig
+ifconfig -a
+exit

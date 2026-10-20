@@ -1,0 +1,31 @@
+{
+  "id": "ARP-3513-01",
+  "title": "Оновлення ARP-кешу після отримання ARP Reply",
+  "variant": 1,
+  "environment": "Ubuntu 24.04; nastysska@Ubuntu24; Wireshark 4.2.2; два ізольовані мережеві простори qa3513-a та qa3513-b, з’єднані veth a0–b0.",
+  "preconditions": [
+    "a0: 10.35.13.1/24, MAC 36:84:df:a9:0a:37",
+    "b0: 10.35.13.2/24, MAC 7a:22:7b:1f:9d:3a",
+    "Обидва інтерфейси UP, початковий ping успішний."
+  ],
+  "steps": [
+    "Зберегти таблицю сусідів A.",
+    "Видалити тільки запис 10.35.13.2 на a0, повторно зберегти таблицю.",
+    "Запустити захоплення Wireshark на a0.",
+    "Виконати ping -c 3 з A до 10.35.13.2.",
+    "Зберегти таблицю A після відповіді; зупинити, зберегти й повторно відкрити захоплення.",
+    "Порівняти MAC у Reply з MAC нового запису таблиці."
+  ],
+  "expected": "Перед обміном запис відсутній. ARP Request широкомовний, Reply повертає MAC B. Після Reply таблиця A містить 10.35.13.2 → MAC B; ping отримує відповіді.",
+  "actual": "cache-before.txt порожній (0 байтів). У arp.pcapng кадр 2: Request 10.35.13.1 → 10.35.13.2; кадр 3: Reply, sender MAC 7a:22:7b:1f:9d:3a. cache-after.txt: 10.35.13.2 dev a0 lladdr 7a:22:7b:1f:9d:3a REACHABLE. Ping 3/3, втрата 0%; RTT min/avg/max 0.035/0.050/0.066 ms.",
+  "evidence": [
+    "arp.pcapng, frames 2–3, 4–9",
+    "cache-initial.txt",
+    "cache-before.txt",
+    "cache-after.txt",
+    "ping.txt",
+    "history-arp.txt"
+  ],
+  "status": "Passed",
+  "capture_sha256": "095a3447f83058d04a2ba14b1ac8775cdb4061d3d2e25d350ff6c10a2ad88a30"
+}

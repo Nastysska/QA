@@ -1,0 +1,27 @@
+cd qa2
+whoami
+date
+sudo apt install -y wireshark
+sudo ip netns add qa3513-a
+sudo ip netns add qa3513-b
+sudo ip link add a0 type veth peer name b0
+sudo ip link set a0 netns qa3513-a
+sudo ip link set b0 netns qa3513-b
+sudo ip -n qa3513-a addr add 10.35.13.1/24 dev a0
+sudo ip -n qa3513-b addr add 10.35.13.2/24 dev b0
+sudo ip -n qa3513-a link set lo up
+sudo ip -n qa3513-b link set lo up
+sudo ip -n qa3513-a link set a0 up
+sudo ip -n qa3513-b link set b0 up
+sudo ip -n qa3513-a -br address
+sudo ip -n qa3513-b -br address
+sudo ip -n qa3513-a -br link
+sudo ip -n qa3513-b -br link
+sudo ip netns exec qa3513-a ping -c 1 10.35.13.2
+sudo ip -n qa3513-a neigh show | tee cache-initial.txt
+sudo ip -n qa3513-a neigh del 10.35.13.2 dev a0
+sudo ip -n qa3513-a neigh show | tee cache-before.txt
+sudo ip netns exec qa3513-a runuser -u nastysska -- env XDG_RUNTIME_DIR=/run/user/1000 wireshark -i a0 > wireshark.log 2>&1 &
+sudo ip netns exec qa3513-a ping -c 3 10.35.13.2 | tee ping.txt
+sudo ip -n qa3513-a neigh show | tee cache-after.txt
+history -w history-arp.txt

@@ -1,20 +1,4 @@
 .DS_Store
 Thumbs.db
-*.tmp
-*.swp
-*.swo
-**/screenshots/
-/Lab01/Work/history-save.png
-/Lab02/Work/test-case.json
-.env
-.env.*
-
-# Локальні архіви та перевірки імпорту.
-/Lab01/Work/Imports/
-/Lab01/Work/preview/
-/Lab02/Work/preview/
-
-# Попередній пакет перенесення на Windows залишається локально.
-/Lab01/Work/QA-Nechyporuk-Windows-Lab01-Lab02-20261015/
-/Lab01/Work/QA-Nechyporuk-Windows-Lab01-Lab02-20261015.zip
-/Lab01/Work/QA-Nechyporuk-Windows-Lab01-Lab02-20261015-verification.json
+__pycache__/
+*.pyc

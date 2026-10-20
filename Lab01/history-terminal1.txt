@@ -1,0 +1,96 @@
+whoami
+hostname
+date
+history 6
+uname -a
+sudo apt update
+sudo apt install --only-upgrade -y krb5-locales
+cat /etc/apt/sources.list.d/ubuntu.sources
+sudo apt install -y vim
+cd
+mkdir -p downloads
+cd downloads
+man ls
+ls -la
+dpkg -i hello_*.deb
+sudo dpkg -i hello_*.deb
+cd /
+sudo -s
+cd ~/downloads
+echo hi all
+echo "$PWD hi all here!"
+touch hi.sh
+echo $PATH
+vim hi.sh
+./hi.sh
+chmod a+x hi.sh
+chmod a+rwx hi.sh
+./hi.sh
+./hi.sh Ukraine
+mkdir scripts
+cp hi.sh scripts/
+mkdir Documents
+cp scripts Documents/
+cp -r scripts Documents/
+cd scripts
+mv hi.sh ..
+cd ..
+rm scripts
+rmdir scripts
+cd /bin
+ls -l
+cd ../..
+tar -cvf ~/downloads/scripts.tar -C ~/downloads/Documents scripts
+cat ~/downloads/hi.sh
+cat /var/log/dpkg.log
+tail -n 20 /var/log/dpkg.log
+less /var/log/dpkg.log
+cd /
+find . -xdev -name dhcp 2>/dev/null
+find . -xdev -iname "*dhcp*" 2>/dev/null
+find . -xdev -iname "*dhcp*" 2>/dev/null | grep --color=always -i dhcp
+find . -xdev -iname "*dhcp*" 2>/dev/null | grep --color=always -i etc
+ping -c 3 google.com
+ping google.com > ~/downloads/ping.log 2>&1 &
+date >> ~/downloads/ping.log
+sudo ping google.com > ~/downloads/ping-root.log 2>&1 &
+vlc > ~/downloads/vlc.log 2>&1 &
+ls -l
+cd /bin
+ls
+echo $PATH
+set
+whoami
+cd /etc
+ls
+cd ..
+cd lib
+ls
+dmesg
+sudo dmesg
+ls -l /dev
+sudo dmesg > ~/downloads/kernel-before.log
+sudo dmesg -C
+sudo dmesg | grep -i usb
+lsusb
+df -h
+cd /home
+ls -l
+lsmod
+cd /proc
+cat cpuinfo
+echo 1 > /proc/sys/net/ipv4/ip_forward
+sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+sudo -s
+cd
+echo vika > 1.txt
+cat 1.txt
+echo vasya > 2.txt
+cat 2.txt
+diff 1.txt 2.txt
+history
+lspci
+history -w history.txt
+whoami
+date
+history -w history.txt

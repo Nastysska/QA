@@ -1,0 +1,14 @@
+whoami
+tty
+date
+ping google.com > ~/downloads/ping-terminal2.log 2>&1 &
+fg
+ps aux | grep ping
+kill -TERM 8548
+ps aux | grep ping
+kill -TERM 8552
+sudo kill -KILL 8552
+ps -C vlc -o user,pid,tty,args
+sudo killall vlc
+ps -C ping,vlc -o user,pid,stat,args
+history -w history-terminal2.txt
